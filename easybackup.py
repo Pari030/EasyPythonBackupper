@@ -1,20 +1,22 @@
-# Made by @inoffensivo on Telegram.
-
-import os, zipfile, time
+import os
+import zipfile
+import time
 
 # VARS
 start = time.time()
 DIR = os.getcwd()
 files_count = 0
 
-# NOME DEL FILE
-backup_file = 'backup.zip'
-# CARTELLE DA SALVARE
-dirs = ['/root','/var/www', '/home', '/usr/local/sbin', '/etc/systemd/system']
-# FILE DA ESCLUDERE (DOVETE LASCIARE IL PRIMO, PER EVITARE CHE SI AUTO-BACKUPI IL FILE DI BACKUP)
+# File Name
+backup_file = f'backup_{time.strftime("%d-%m-%Y"}.zip'
+
+# Save Dirs
+dirs = ['/root','/var/www', '/home']
+
+# Excluded files (the first is the backuped file)
 exclude_files = [DIR + '/' + backup_file]
 
-# FUNCTIONS
+# Get All Files 
 def getListOfFiles(path):
     listOfFile = os.listdir(path)
     allFiles = list()
@@ -26,6 +28,7 @@ def getListOfFiles(path):
             allFiles.append(fullPath)
     return allFiles
 
+# Delete Old Backup
 def clearBackup():
     global DIR
     global backup_file
@@ -35,6 +38,7 @@ def clearBackup():
             zip.close()
     return True
 
+# Create Backup
 def createBackup():
     if clearBackup():
         global dirs
@@ -44,9 +48,12 @@ def createBackup():
                 dirs_files = getListOfFiles(x)
                 for i in dirs_files:
                     if not i in exclude_files:
-                        files_count += 1
-                        zip.write(i)
-                        if files_count%100 == 0:
+                        try:
+                            zip.write(i)
+                            files_count += 1
+                        except:
+                            pass
+                        if files_count % 100 == 0:
                             os.system('clear')
                             print(f"#####################\n# BACKUP IN CORSO..\n# FILE SALVATI: {files_count}\n#####################")
             zip.close()
@@ -56,13 +63,14 @@ def createBackup():
         return False, False
 
 
-# PROGRAM
-dirs, files_count = createBackup()
-os.system('clear')
-if files_count != False and dirs != False:
-    end = time.time()
-    seconds = round(end-start,2)
-    print(f"""#####################
+if __name__ == '__main__':
+    # PROGRAM
+    dirs, files_count = createBackup()
+    os.system('clear')
+    if files_count != False and dirs != False:
+        end = time.time()
+        seconds = round(end-start,2)
+        print(f"""#####################
 # BACKUP COMPLETATO
 #
 # Tempo: {str(seconds)}s
@@ -71,6 +79,6 @@ if files_count != False and dirs != False:
 #
 # by @inoffensivo
 #####################
-    """)
-else:
-    print('WTF')
+        """)
+    else:
+        print('WTF')
